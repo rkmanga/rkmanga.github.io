@@ -40,12 +40,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: portfolio
-          path: deployment/site2
+          path: deployment/portfolio
           clean: false
 
       # Remove the nested .git folder to avoid conflicts
       - name: Remove nested .git folder
-        run: rm -rf deployment/site2/.git
+        run: rm -rf deployment/portfolio/.git
 
       # Upload the combined deployment directory as the Pages artifact
       - name: Upload Pages artifact
