@@ -1,0 +1,59 @@
+name: Deploy GitHub Pages (Multi-Site)
+
+on:
+  push:
+    branches:
+      - main
+      - portfolio
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      # Checkout the master branch (main site)
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      # Create the deployment root directory
+      - name: Create deployment directory
+        run: mkdir -p deployment
+
+      # Copy main site files to the root of deployment
+      - name: Copy main site to deployment root
+        run: |
+          cp -r ./* deployment/ || true
+          rm -rf deployment/.github deployment/.git
+
+      # Checkout the second site branch into a subfolder
+      - name: Checkout portfolio branch
+        uses: actions/checkout@v4
+        with:
+          ref: portfolio
+          path: deployment/site2
+          clean: false
+
+      # Remove the nested .git folder to avoid conflicts
+      - name: Remove nested .git folder
+        run: rm -rf deployment/site2/.git
+
+      # Upload the combined deployment directory as the Pages artifact
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: deployment
+
+      # Deploy the artifact to GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
