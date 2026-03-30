@@ -3,8 +3,8 @@ name: Deploy GitHub Pages (Multi-Site)
 on:
   push:
     branches:
-      - master
-      - site2-source
+      - main
+      - portfolio
 
 permissions:
   contents: read
@@ -20,10 +20,10 @@ jobs:
 
     steps:
       # Checkout the master branch (main site)
-      - name: Checkout master
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
-          ref: master
+          ref: main
 
       # Create the deployment root directory
       - name: Create deployment directory
@@ -36,10 +36,10 @@ jobs:
           rm -rf deployment/.github deployment/.git
 
       # Checkout the second site branch into a subfolder
-      - name: Checkout site2-source branch
+      - name: Checkout portfolio branch
         uses: actions/checkout@v4
         with:
-          ref: site2-source
+          ref: portfolio
           path: deployment/site2
           clean: false
 
