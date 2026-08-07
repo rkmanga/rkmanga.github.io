@@ -44,17 +44,18 @@ jobs:
       #     clean: false
 
       # Checkout the brightline repo into a subfolder
+      # Needs a PAT: the default GITHUB_TOKEN cannot read other repositories.
       - name: Checkout brightline repo
         uses: actions/checkout@v4
         with:
           repository: rkmanga/brightline
-          path: brightline
+          token: ${{ secrets.BRIGHTLINE_TOKEN }}
+          path: deployment/brightline
           clean: false
-
 
       # Remove the nested .git folder to avoid conflicts
       - name: Remove nested .git folder
-        run: rm -rf deployment/site2/.git
+        run: rm -rf deployment/brightline/.git
 
       # Upload the combined deployment directory as the Pages artifact
       - name: Upload Pages artifact
