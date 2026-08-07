@@ -49,6 +49,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: rkmanga/brightline
+          token: ${{ secrets.BRIGHTLINE_TOKEN }}
           path: deployment/brightline
           clean: false
 
