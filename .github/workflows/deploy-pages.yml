@@ -35,12 +35,20 @@ jobs:
           cp -r ./* deployment/ || true
           rm -rf deployment/.github deployment/.git
 
-      # Checkout the second site branch into a subfolder
+      # Checkout the BA portfolio branch into a subfolder
       - name: Checkout portfolio branch
         uses: actions/checkout@v4
         with:
-          ref: portfolio
+          repository: portfolio
           path: deployment/portfolio
+          clean: false
+
+      # Checkout the brightline repo into a subfolder
+      - name: Checkout portfolio branch
+        uses: actions/checkout@v4
+        with:
+          repository: rkmanga/brightlne
+          path: brightlne
           clean: false
 
       # Remove the nested .git folder to avoid conflicts
