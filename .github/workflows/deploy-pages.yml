@@ -36,12 +36,21 @@ jobs:
           rm -rf deployment/.github deployment/.git
 
       # Checkout the technical writing portfolio branch into a subfolder
-      - name: Checkout portfolio branch
+      # - name: Checkout portfolio branch
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: portfolio
+      #     path: deployment/portfolio
+      #     clean: false
+
+      # Checkout the brightline repo into a subfolder
+      - name: Checkout brightline repo
         uses: actions/checkout@v4
         with:
-          repository: portfolio
-          path: deployment/portfolio
+          repository: rkmanga/brightline
+          path: brightline
           clean: false
+
 
       # Remove the nested .git folder to avoid conflicts
       - name: Remove nested .git folder
