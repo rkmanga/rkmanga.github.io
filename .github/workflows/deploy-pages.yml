@@ -61,19 +61,6 @@ jobs:
           mv deployment/_technical-writing-src/site deployment/technical-writing
           rm -rf deployment/_technical-writing-src
 
-      # TEMPORARY DEBUG STEP: dump deployment dir listing to a public file
-      # so it can be inspected via the live site without needing API auth.
-      - name: Debug deployment listing
-        run: |
-          {
-            echo "=== deployment top level ==="
-            ls -la deployment
-            echo "=== deployment/technical-writing exists? ==="
-            ls -la deployment/technical-writing 2>&1
-            echo "=== find (first 100) ==="
-            find deployment -maxdepth 3 | sort | head -100
-          } > deployment/_debug.txt
-
       # Upload the combined deployment directory as the Pages artifact
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
