@@ -43,14 +43,17 @@ jobs:
       #     path: deployment/site2
       #     clean: false
 
-      # Checkout the technical-writing repo into a staging folder
+      # Checkout just the site/ folder of the technical-writing repo (sparse checkout)
       # Needs a PAT: the default GITHUB_TOKEN cannot read other repositories.
-      - name: Checkout technical-writing repo
+      - name: Checkout technical-writing repo (site/ only)
         uses: actions/checkout@v4
         with:
           repository: rkmanga/technical-writing
           token: ${{ secrets.TECHNICAL_WRITING_TOKEN }}
           path: deployment/_technical-writing-src
+          sparse-checkout: |
+            site
+          sparse-checkout-cone-mode: false
           clean: false
 
       # This repo is an MkDocs project: the built site (with index.html)
