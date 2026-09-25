@@ -57,6 +57,10 @@ jobs:
       - name: Remove nested .git folder
         run: rm -rf deployment/technical-writing/.git
 
+      # Remove virtual environment to avoid path length issues
+      - name: Remove virtual environment
+        run: rm -rf deployment/technical-writing/venv
+
       # Upload the combined deployment directory as the Pages artifact
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
