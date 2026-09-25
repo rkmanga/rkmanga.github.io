@@ -43,23 +43,23 @@ jobs:
       #     path: deployment/site2
       #     clean: false
 
-      # Checkout the technical-writing repo into a subfolder
+      # Checkout the technical-writing repo into a staging folder
       # Needs a PAT: the default GITHUB_TOKEN cannot read other repositories.
       - name: Checkout technical-writing repo
         uses: actions/checkout@v4
         with:
           repository: rkmanga/technical-writing
           token: ${{ secrets.TECHNICAL_WRITING_TOKEN }}
-          path: deployment/technical-writing
+          path: deployment/_technical-writing-src
           clean: false
 
-      # Remove the nested .git folder to avoid conflicts
-      - name: Remove nested .git folder
-        run: rm -rf deployment/technical-writing/.git
-
-      # Remove virtual environment to avoid path length issues
-      - name: Remove virtual environment
-        run: rm -rf deployment/technical-writing/venv
+      # This repo is an MkDocs project: the built site (with index.html)
+      # lives in its site/ subfolder, not at the repo root. Promote just
+      # that built output into the deployment subfolder.
+      - name: Promote technical-writing built site
+        run: |
+          mv deployment/_technical-writing-src/site deployment/technical-writing
+          rm -rf deployment/_technical-writing-src
 
       # Upload the combined deployment directory as the Pages artifact
       - name: Upload Pages artifact
