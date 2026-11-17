@@ -5,6 +5,7 @@ on:
     branches:
       - main
       #- portfolio
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -43,9 +44,9 @@ jobs:
       #     path: deployment/site2
       #     clean: false
 
-      # Checkout just the site/ folder of the technical-writing repo (sparse checkout)
+      # Checkout the site/ folder and website_specialist_portfolio.html from the technical-writing repo
       # Needs a PAT: the default GITHUB_TOKEN cannot read other repositories.
-      - name: Checkout technical-writing repo (site/ only)
+      - name: Checkout technical-writing repo (site/ and portfolio)
         uses: actions/checkout@v4
         with:
           repository: rkmanga/technical-writing
@@ -53,15 +54,35 @@ jobs:
           path: deployment/_technical-writing-src
           sparse-checkout: |
             site
+            website_specialist_portfolio.html
+            docs/website_specialist_portfolio.html
           sparse-checkout-cone-mode: false
           clean: false
 
-      # This repo is an MkDocs project: the built site (with index.html)
-      # lives in its site/ subfolder, not at the repo root. Promote just
-      # that built output into the deployment subfolder.
-      - name: Promote technical-writing built site
+      # Promote the built MkDocs site and publish website_specialist_portfolio
+      - name: Promote technical-writing built site and portfolio page
         run: |
           mv deployment/_technical-writing-src/site deployment/technical-writing
+          mkdir -p deployment/technical-writing/website_specialist_portfolio
+
+          # Locate website_specialist_portfolio.html (supports placing it in main repo or technical-writing repo)
+          if [ -f "website_specialist_portfolio.html" ]; then
+            PORTFOLIO_SRC="website_specialist_portfolio.html"
+          elif [ -f "deployment/_technical-writing-src/website_specialist_portfolio.html" ]; then
+            PORTFOLIO_SRC="deployment/_technical-writing-src/website_specialist_portfolio.html"
+          elif [ -f "deployment/_technical-writing-src/docs/website_specialist_portfolio.html" ]; then
+            PORTFOLIO_SRC="deployment/_technical-writing-src/docs/website_specialist_portfolio.html"
+          elif [ -f "deployment/technical-writing/website_specialist_portfolio.html" ]; then
+            PORTFOLIO_SRC="deployment/technical-writing/website_specialist_portfolio.html"
+          else
+            echo "Error: website_specialist_portfolio.html not found!"
+            exit 1
+          fi
+
+          # Publish to both /website_specialist_portfolio/index.html (clean URL) and /website_specialist_portfolio.html
+          cp "$PORTFOLIO_SRC" deployment/technical-writing/website_specialist_portfolio/index.html
+          cp "$PORTFOLIO_SRC" deployment/technical-writing/website_specialist_portfolio.html
+
           rm -rf deployment/_technical-writing-src
 
       # Upload the combined deployment directory as the Pages artifact
