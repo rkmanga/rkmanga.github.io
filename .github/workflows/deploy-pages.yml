@@ -57,12 +57,12 @@ jobs:
           sparse-checkout-cone-mode: false
           clean: false
 
-      # Checkout the web_specialist_portfolio repo
+      # Checkout the web-specialist-portfolio repo
       # Needs a PAT: uses PORTFOLIO_TOKEN if set, otherwise falls back to TECHNICAL_WRITING_TOKEN.
-      - name: Checkout web_specialist_portfolio repo
+      - name: Checkout web-specialist-portfolio repo
         uses: actions/checkout@v4
         with:
-          repository: rkmanga/web_specialist_portfolio
+          repository: rkmanga/web-specialist-portfolio
           token: ${{ secrets.PORTFOLIO_TOKEN || secrets.TECHNICAL_WRITING_TOKEN }}
           path: deployment/_portfolio-src
           clean: false
@@ -117,8 +117,10 @@ jobs:
           cp "$PORTFOLIO_SRC" deployment/website_specialist_portfolio/index.html
           cp "$PORTFOLIO_SRC" deployment/website_specialist_portfolio.html
 
-          # Also support /web_specialist_portfolio/ URL (matching repository name)
-          mkdir -p deployment/web_specialist_portfolio
+          # Also support /web-specialist-portfolio/ and /web_specialist_portfolio/ URLs
+          mkdir -p deployment/web-specialist-portfolio deployment/web_specialist_portfolio
+          cp "$PORTFOLIO_SRC" deployment/web-specialist-portfolio/index.html
+          cp "$PORTFOLIO_SRC" deployment/web-specialist-portfolio.html
           cp "$PORTFOLIO_SRC" deployment/web_specialist_portfolio/index.html
           cp "$PORTFOLIO_SRC" deployment/web_specialist_portfolio.html
 
