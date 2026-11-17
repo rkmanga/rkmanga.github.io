@@ -44,9 +44,9 @@ jobs:
       #     path: deployment/site2
       #     clean: false
 
-      # Checkout the site/ folder and website_specialist_portfolio.html from the technical-writing repo
+      # Checkout the site/ folder from the technical-writing repo
       # Needs a PAT: the default GITHUB_TOKEN cannot read other repositories.
-      - name: Checkout technical-writing repo (site/ and portfolio)
+      - name: Checkout technical-writing repo
         uses: actions/checkout@v4
         with:
           repository: rkmanga/technical-writing
@@ -54,36 +54,81 @@ jobs:
           path: deployment/_technical-writing-src
           sparse-checkout: |
             site
-            website_specialist_portfolio.html
-            docs/website_specialist_portfolio.html
           sparse-checkout-cone-mode: false
           clean: false
 
-      # Promote the built MkDocs site and publish website_specialist_portfolio
-      - name: Promote technical-writing built site and portfolio page
-        run: |
-          mv deployment/_technical-writing-src/site deployment/technical-writing
-          mkdir -p deployment/technical-writing/website_specialist_portfolio
+      # Checkout the web_specialist_portfolio repo
+      # Needs a PAT: uses PORTFOLIO_TOKEN if set, otherwise falls back to TECHNICAL_WRITING_TOKEN.
+      - name: Checkout web_specialist_portfolio repo
+        uses: actions/checkout@v4
+        with:
+          repository: rkmanga/web_specialist_portfolio
+          token: ${{ secrets.PORTFOLIO_TOKEN || secrets.TECHNICAL_WRITING_TOKEN }}
+          path: deployment/_portfolio-src
+          clean: false
 
-          # Locate website_specialist_portfolio.html (supports placing it in main repo or technical-writing repo)
-          if [ -f "website_specialist_portfolio.html" ]; then
+      # Promote technical-writing built site
+      - name: Promote technical-writing built site
+        run: |
+          if [ -d "deployment/_technical-writing-src/site" ]; then
+            mv deployment/_technical-writing-src/site deployment/technical-writing
+          fi
+          rm -rf deployment/_technical-writing-src
+
+      # Publish website_specialist_portfolio page and accompanying assets
+      - name: Publish website_specialist_portfolio
+        run: |
+          # Locate website_specialist_portfolio.html in _portfolio-src, main repo, etc.
+          PORTFOLIO_SRC=""
+          if [ -f "deployment/_portfolio-src/website_specialist_portfolio.html" ]; then
+            PORTFOLIO_SRC="deployment/_portfolio-src/website_specialist_portfolio.html"
+          elif [ -f "deployment/_portfolio-src/docs/website_specialist_portfolio.html" ]; then
+            PORTFOLIO_SRC="deployment/_portfolio-src/docs/website_specialist_portfolio.html"
+          elif [ -f "deployment/_portfolio-src/index.html" ]; then
+            PORTFOLIO_SRC="deployment/_portfolio-src/index.html"
+          elif [ -f "website_specialist_portfolio.html" ]; then
             PORTFOLIO_SRC="website_specialist_portfolio.html"
-          elif [ -f "deployment/_technical-writing-src/website_specialist_portfolio.html" ]; then
-            PORTFOLIO_SRC="deployment/_technical-writing-src/website_specialist_portfolio.html"
-          elif [ -f "deployment/_technical-writing-src/docs/website_specialist_portfolio.html" ]; then
-            PORTFOLIO_SRC="deployment/_technical-writing-src/docs/website_specialist_portfolio.html"
-          elif [ -f "deployment/technical-writing/website_specialist_portfolio.html" ]; then
-            PORTFOLIO_SRC="deployment/technical-writing/website_specialist_portfolio.html"
           else
+            FOUND=$(find deployment/_portfolio-src -name "website_specialist_portfolio.html" 2>/dev/null | head -n 1)
+            if [ -n "$FOUND" ]; then
+              PORTFOLIO_SRC="$FOUND"
+            fi
+          fi
+
+          if [ -z "$PORTFOLIO_SRC" ] || [ ! -f "$PORTFOLIO_SRC" ]; then
             echo "Error: website_specialist_portfolio.html not found!"
+            echo "Contents of deployment/_portfolio-src:"
+            ls -la deployment/_portfolio-src || true
             exit 1
           fi
 
-          # Publish to both /website_specialist_portfolio/index.html (clean URL) and /website_specialist_portfolio.html
+          echo "Found portfolio source at: $PORTFOLIO_SRC"
+
+          # Create destination directory for website_specialist_portfolio
+          mkdir -p deployment/website_specialist_portfolio
+
+          # Copy any accompanying assets/files from the portfolio repo
+          if [ -d "deployment/_portfolio-src" ]; then
+            cp -r deployment/_portfolio-src/* deployment/website_specialist_portfolio/ 2>/dev/null || true
+            rm -rf deployment/website_specialist_portfolio/.git
+          fi
+
+          # Publish to root /website_specialist_portfolio/index.html (clean URL) and /website_specialist_portfolio.html
+          cp "$PORTFOLIO_SRC" deployment/website_specialist_portfolio/index.html
+          cp "$PORTFOLIO_SRC" deployment/website_specialist_portfolio.html
+
+          # Also support /web_specialist_portfolio/ URL (matching repository name)
+          mkdir -p deployment/web_specialist_portfolio
+          cp "$PORTFOLIO_SRC" deployment/web_specialist_portfolio/index.html
+          cp "$PORTFOLIO_SRC" deployment/web_specialist_portfolio.html
+
+          # Also publish under /technical-writing/ for backwards compatibility
+          mkdir -p deployment/technical-writing/website_specialist_portfolio
           cp "$PORTFOLIO_SRC" deployment/technical-writing/website_specialist_portfolio/index.html
           cp "$PORTFOLIO_SRC" deployment/technical-writing/website_specialist_portfolio.html
 
-          rm -rf deployment/_technical-writing-src
+          # Clean up temporary staging directory
+          rm -rf deployment/_portfolio-src
 
       # Upload the combined deployment directory as the Pages artifact
       - name: Upload Pages artifact
