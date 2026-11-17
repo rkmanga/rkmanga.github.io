@@ -55,6 +55,7 @@ jobs:
           sparse-checkout: |
             site
           sparse-checkout-cone-mode: false
+          persist-credentials: false
           clean: false
 
       # Checkout the web-specialist-portfolio repo
@@ -65,6 +66,7 @@ jobs:
           repository: rkmanga/web-specialist-portfolio
           token: ${{ secrets.PORTFOLIO_TOKEN || secrets.TECHNICAL_WRITING_TOKEN }}
           path: deployment/_portfolio-src
+          persist-credentials: false
           clean: false
 
       # Promote technical-writing built site
